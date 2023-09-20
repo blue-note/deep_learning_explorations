@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "deep-learning-explorations"
+version = "0.1.0"
+description = "explorations with neural networks"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "deep_learning_explorations"}]
+
+[tool.poetry.dependencies]
+python = "^3.10 || ^3.11"
+torch = "^2.0.1"
+manim = "^0.17.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
