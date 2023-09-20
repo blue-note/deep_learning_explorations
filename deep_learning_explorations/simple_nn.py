@@ -4,22 +4,44 @@ import torch.optim as optim
 import torch.utils.data as data
 import numpy as np
 
-from deep_learning_explorations.visualize import InputPointVisualization, OutputPointVisualization
+from deep_learning_explorations.visualize import InputPointVisualization, IntermediatePointVisualization, OutputPointVisualization
 
 
 # Define a simple fully connected feedforward neural network
 class SimpleNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(SimpleNN, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, output_size)
+        
+        # Initial layer
+        self.initial = nn.Linear(input_size, hidden_size)
+        
+        # Intermediate layers
+        self.layers = nn.ModuleList()
+        for _ in range(num_layers - 2):  # Subtract 2 because we already have the initial and final layers
+            self.layers.append(nn.Linear(hidden_size, hidden_size))
+        
+        # Final layer
+        self.final = nn.Linear(hidden_size, output_size)
+        
         self.relu = nn.ReLU()
 
-    def forward(self, x):
-        x = self.fc1(x)
-        x = self.relu(x)
-        x = self.fc2(x)
-        return x
+    def forward(self, input):
+        outputs = []
+        
+        x = self.initial(input)
+        outputs.append(x)
+        
+        for layer in self.layers:
+            x = self.relu(x)
+            outputs.append(x)
+            x = layer(x)
+            outputs.append(x)
+        
+        x = self.final(x)
+        outputs.append(x)
+        
+        return tuple(outputs)
+
     
 def train(model, dataloader, criterion, optimizer, num_epochs=10):
     # Set the model to training mode
@@ -35,7 +57,7 @@ def train(model, dataloader, criterion, optimizer, num_epochs=10):
             optimizer.zero_grad()
 
             # Forward pass
-            outputs = model(inputs)
+            outputs = model(inputs)[-1]
 
             # Convert labels to the correct shape and type
             labels = labels.long().squeeze()
@@ -82,15 +104,25 @@ def generate_2D_coordinate_dataset(num_points=1000, radius=3.0):
 
     return points, labels
 
-def get_model_output(model, points_tensor):
+def get_model_outputs(model, points_tensor):
     with torch.no_grad():
         model.eval()
-        outputs = model(points_tensor)
-        # Convert the logits to probabilities using softmax
-        probabilities = torch.nn.functional.softmax(outputs, dim=1)
-    return probabilities.numpy()
+        intermediates = model(points_tensor)
+        
+        # Convert the logits of the last intermediate to probabilities using softmax
+        probabilities = torch.nn.functional.softmax(intermediates[-1], dim=1)
+        
+        # Convert intermediates to numpy (except the last one which is already converted)
+        intermediates_np = [intermediate.numpy() for intermediate in intermediates[:-1]]
+        
+    return intermediates_np, probabilities.numpy()
 
-def prepare_dataset_and_train_model(model):
+def visualize_hidden_layers(input_points, input_labels, intermediate_outputs):
+    for output in intermediate_outputs:
+        viz = IntermediatePointVisualization(input_points, input_labels, output)
+        viz.construct()
+
+def prepare_dataset_and_run_model():
     # 1. Prepare the dataset and dataloader
     points, labels = generate_2D_coordinate_dataset(num_points=1000, radius=1.0)
 
@@ -107,9 +139,10 @@ def prepare_dataset_and_train_model(model):
 
     # 2. Initialize the model, criterion, and optimizer
     input_size = 2
-    hidden_size = 10
+    hidden_size = 3
     output_size = 2
-    model = SimpleNN(input_size, hidden_size, output_size)
+    num_layers = 3
+    model = SimpleNN(input_size, hidden_size, num_layers, output_size)
 
     criterion = nn.CrossEntropyLoss() 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -117,13 +150,13 @@ def prepare_dataset_and_train_model(model):
     # 3. Train the model
     all_losses = train(model, dataloader, criterion, optimizer, num_epochs=50)
 
-    # 4. Get the output of the model for all data points
-    output_probabilities = get_model_output(model, points_tensor)
+    # 4. Get the outputs of the model for all data points
+    intermediate_outputs, output_probabilities = get_model_outputs(model, points_tensor)
+    visualize_hidden_layers(points, labels, intermediate_outputs)
 
     # 5. Visualize the output data
-    output_viz = OutputPointVisualization(points, labels, output_probabilities)
+    output_viz = OutputPointVisualization(labels, output_probabilities)
     output_viz.construct()
-
 
     return model, all_losses
 

@@ -31,25 +31,6 @@ class NeuralNetworkScene(ThreeDScene):
         # Display everything
         self.add(*input_layer, *hidden_layer, *output_layer, input_label, hidden_label, output_label)
 
-class MatrixMultiplication(Scene):
-    def construct(self):
-        matrix1 = Matrix([[1, 2], [3, 4]])
-        matrix2 = Matrix([[2, 3], [1, 2]])
-        result = Matrix([[4, 7], [10, 15]])
-
-        # Position matrices
-        matrix1.next_to(LEFT, buff=1)
-        matrix2.next_to(matrix1, RIGHT, buff=0.5)
-        result.next_to(matrix2, RIGHT, buff=0.5)
-
-        self.play(Write(matrix1), Write(matrix2))
-        self.wait(1)
-
-        # Show multiplication
-        self.play(Transform(matrix2, result))
-        self.wait(1)
-
-
 class InputPointVisualization(Scene):
     def __init__(self, points, labels):
         super().__init__()
@@ -57,18 +38,47 @@ class InputPointVisualization(Scene):
         self.labels = labels
 
     def construct(self):
+        # Add 2D axes
+        axes = Axes(
+            x_range=[-4, 4],
+            y_range=[-4, 4],
+            axis_config={"color": WHITE},
+        )
+        self.add(axes)
         # Iterate over points and labels to create Dots and add them to the scene
         for point, label in zip(self.points, self.labels):
-            color = GREEN if label == 1 else RED
+            color = BLUE if label == 1 else YELLOW
             point_3d = np.append(point, [0])
-            dot = Dot(point=point_3d, color=color).scale(0.1)  # scale to make dots smaller
+            dot = Dot(point=point_3d, color=color).scale(0.3)  # scale to make dots smaller
+            self.add(dot)
+
+        self.wait(1)
+
+
+class IntermediatePointVisualization(ThreeDScene):
+    def __init__(self, input_points, input_labels, intermediate_points):
+        super().__init__()
+        self.input_points = input_points
+        self.input_labels = input_labels
+        self.intermediate_points = intermediate_points
+
+    def construct(self):
+        # Set the camera position
+        self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+        axes = ThreeDAxes()
+        self.add(axes)
+
+        # Iterate over points and labels to create Dots and add them to the scene
+        for point, label in zip(self.intermediate_points, self.input_labels):
+            color = BLUE if label == 1 else YELLOW  
+            dot = Dot3D(point=point, color=color).scale(0.2)  # scale to make dots smaller
             self.add(dot)
 
         self.wait(1)
 
 
 class OutputPointVisualization(Scene):
-    def __init__(self, input_points, input_labels, output_points):
+    def __init__(self, input_labels, output_points):
         super().__init__()
         self.input_labels = input_labels
         self.output_points = output_points
@@ -76,7 +86,7 @@ class OutputPointVisualization(Scene):
     def construct(self):
         # Iterate over output points and input labels to create Dots and add them to the scene
         for point, label in zip(self.output_points, self.input_labels):
-            color = GREEN if label == 1 else RED
+            color = BLUE if label == 1 else YELLOW
             point_3d = np.append(point, [0])  # Convert 2D point to 3D by appending a 0 for the z-axis
             dot = Dot(point=point_3d, color=color).scale(0.1)  # scale to make dots smaller
             self.add(dot)
