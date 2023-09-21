@@ -1,0 +1,7 @@
+# This file is used internally by FFMPEG.
+file 'file:/Users/janitachalam/Code/deep_learning_explorations/media/videos/1080p60/partial_movie_files/NetworkVisualization/4103355148_1604499402_223132457.mp4'
+file 'file:/Users/janitachalam/Code/deep_learning_explorations/media/videos/1080p60/partial_movie_files/NetworkVisualization/596973503_1911088143_348448184.mp4'
+file 'file:/Users/janitachalam/Code/deep_learning_explorations/media/videos/1080p60/partial_movie_files/NetworkVisualization/596973503_581681124_348448184.mp4'
+file 'file:/Users/janitachalam/Code/deep_learning_explorations/media/videos/1080p60/partial_movie_files/NetworkVisualization/596973503_1228122199_348448184.mp4'
+file 'file:/Users/janitachalam/Code/deep_learning_explorations/media/videos/1080p60/partial_movie_files/NetworkVisualization/596973503_715004299_348448184.mp4'
+file 'file:/Users/janitachalam/Code/deep_learning_explorations/media/videos/1080p60/partial_movie_files/NetworkVisualization/596973503_824320695_348448184.mp4'

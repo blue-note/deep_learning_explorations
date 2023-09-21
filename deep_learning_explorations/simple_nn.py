@@ -4,7 +4,7 @@ import torch.optim as optim
 import torch.utils.data as data
 import numpy as np
 
-from deep_learning_explorations.visualize import InputPointVisualization, IntermediatePointVisualization, OutputPointVisualization
+from deep_learning_explorations.visualize import NetworkVisualization
 
 
 # Define a simple fully connected feedforward neural network
@@ -117,17 +117,9 @@ def get_model_outputs(model, points_tensor):
         
     return intermediates_np, probabilities.numpy()
 
-def visualize_hidden_layers(input_points, input_labels, intermediate_outputs):
-    for output in intermediate_outputs:
-        viz = IntermediatePointVisualization(input_points, input_labels, output)
-        viz.construct()
-
 def prepare_dataset_and_run_model():
     # 1. Prepare the dataset and dataloader
     points, labels = generate_2D_coordinate_dataset(num_points=1000, radius=1.0)
-
-    point_viz = InputPointVisualization(points, labels)
-    point_viz.construct()
 
     # Convert the numpy arrays to PyTorch tensors
     points_tensor = torch.tensor(points, dtype=torch.float32)
@@ -152,11 +144,10 @@ def prepare_dataset_and_run_model():
 
     # 4. Get the outputs of the model for all data points
     intermediate_outputs, output_probabilities = get_model_outputs(model, points_tensor)
-    visualize_hidden_layers(points, labels, intermediate_outputs)
 
-    # 5. Visualize the output data
-    output_viz = OutputPointVisualization(labels, output_probabilities)
-    output_viz.construct()
+    # 5. Visualize the network
+    network_viz = NetworkVisualization(points, labels, intermediate_outputs, output_probabilities)
+    network_viz.render()
 
     return model, all_losses
 
